@@ -1,2 +1,2 @@
-APP_URL=https://story-maps.example.com
-MAP_SERVICE_API_KEY=YOUR_OPENSTREETMAP_API_KEY_HERE
+URL Deployment:
+https://febiolatampubolon.github.io/Proyek-Kedua/
