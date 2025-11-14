@@ -10,7 +10,6 @@ export default class HomePage {
           <a href="#/add-story" class="btn btn-secondary">Add Your Story</a>
         </div>
         
-        <h2>Features</h2>
         <div class="features">
           <div class="feature-card">
             <h3>🌍 Explore Stories</h3>

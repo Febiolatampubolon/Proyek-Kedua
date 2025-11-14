@@ -18,8 +18,6 @@ class App {
   #setupDrawer() {
     this.#drawerButton.addEventListener('click', () => {
       this.#navigationDrawer.classList.toggle('open');
-      const expanded = this.#navigationDrawer.classList.contains('open');
-      this.#drawerButton.setAttribute('aria-expanded', expanded ? 'true' : 'false');
     });
 
     document.body.addEventListener('click', (event) => {
@@ -33,7 +31,6 @@ class App {
       this.#navigationDrawer.querySelectorAll('a').forEach((link) => {
         if (link.contains(event.target)) {
           this.#navigationDrawer.classList.remove('open');
-          this.#drawerButton.setAttribute('aria-expanded', 'false');
         }
       });
     });
@@ -113,7 +110,7 @@ class App {
   }
 
   #requiresAuth(url) {
-    const protectedRoutes = ['/add-story', '/map'];
+    const protectedRoutes = ['/add-story'];
     return protectedRoutes.includes(url);
   }
 }

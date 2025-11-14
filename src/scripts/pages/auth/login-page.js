@@ -5,7 +5,7 @@ export default class LoginPage {
     return `
       <section class="auth-container">
         <div class="auth-card">
-          <h1>Login</h1>
+          <h2>Login</h2>
           <form id="login-form">
             <div class="form-group">
               <label for="email">Email:</label>

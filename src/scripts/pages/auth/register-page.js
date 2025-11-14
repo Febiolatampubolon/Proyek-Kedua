@@ -5,7 +5,7 @@ export default class RegisterPage {
     return `
       <section class="auth-container">
         <div class="auth-card">
-          <h1>Register</h1>
+          <h2>Register</h2>
           <form id="register-form">
             <div class="form-group">
               <label for="name">Name:</label>

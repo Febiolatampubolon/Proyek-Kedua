@@ -5,7 +5,7 @@ export default class AddStoryPage {
     return `
       <section class="add-story-container">
         <div class="add-story-card">
-          <h1>Add New Story</h1>
+          <h2>Add New Story</h2>
           <form id="add-story-form">
             <div class="form-group">
               <label for="description">Description:</label>
@@ -38,7 +38,6 @@ export default class AddStoryPage {
             </div>
             
             <button type="submit" class="btn btn-primary">Add Story</button>
-            <div id="submit-status" class="error-message" aria-live="polite"></div>
           </form>
         </div>
       </section>
@@ -59,85 +58,39 @@ export default class AddStoryPage {
         e.preventDefault();
         
         // Get form values
-        const descriptionEl = document.getElementById('description');
-        const photoEl = document.getElementById('photo');
-        const latEl = document.getElementById('lat');
-        const lonEl = document.getElementById('lon');
-        const statusEl = document.getElementById('submit-status');
-
-        // Reset errors
-        ['description','photo','lat','lon'].forEach(id => {
-          const err = document.getElementById(`${id}-error`);
-          if (err) err.textContent = '';
-        });
-        statusEl.textContent = '';
-
-        const description = descriptionEl.value.trim();
-        const photo = photoEl.files[0];
+        const description = document.getElementById('description').value;
+        const photo = document.getElementById('photo').files[0];
         const lat = parseFloat(document.getElementById('lat').value);
         const lon = parseFloat(document.getElementById('lon').value);
         
         // Validate inputs
-        let hasError = false;
-        if (!description) {
-          document.getElementById('description-error').textContent = 'Deskripsi wajib diisi';
-          hasError = true;
+        if (!description || !photo || isNaN(lat) || isNaN(lon)) {
+          alert('Please fill all fields correctly');
+          return;
         }
-        if (!photo) {
-          document.getElementById('photo-error').textContent = 'Foto wajib diunggah';
-          hasError = true;
-        } else {
-          if (!photo.type.startsWith('image/')) {
-            document.getElementById('photo-error').textContent = 'File harus berupa gambar';
-            hasError = true;
-          }
-          if (photo.size > 1024 * 1024) {
-            document.getElementById('photo-error').textContent = 'Ukuran gambar maksimal 1MB';
-            hasError = true;
-          }
-        }
-        if (isNaN(lat)) {
-          document.getElementById('lat-error').textContent = 'Pilih lokasi pada peta';
-          hasError = true;
-        }
-        if (isNaN(lon)) {
-          document.getElementById('lon-error').textContent = 'Pilih lokasi pada peta';
-          hasError = true;
-        }
-        if (hasError) return;
         
         // Get token from localStorage
         const token = localStorage.getItem('token');
         if (!token) {
-          // Allow guest submission but inform user
-          statusEl.textContent = 'Mengirim sebagai tamu (tanpa autentikasi).';
+          alert('You need to login first');
+          window.location.hash = '#/login';
+          return;
         }
         
         try {
           const result = await addStory({ description, photo, lat, lon });
           
           if (result.error) {
-            throw new Error(result.message || 'Gagal menambahkan cerita');
+            alert(`Error: ${result.message}`);
+            return;
           }
           
           // Show success message and redirect to map
-          statusEl.textContent = 'Story berhasil ditambahkan!';
+          alert('Story added successfully!');
           window.location.hash = '#/map';
         } catch (error) {
-          console.warn('Add story gagal, mencoba simpan offline untuk sinkronisasi', error);
-          try {
-            const { savePendingStory } = await import('../../utils/idb.js');
-            await savePendingStory({ description, photo, lat, lon });
-            statusEl.textContent = 'Offline: Cerita disimpan dan akan di-sync saat online.';
-            // Register background sync jika tersedia
-            if ('serviceWorker' in navigator && 'SyncManager' in window) {
-              const reg = await navigator.serviceWorker.ready;
-              try { await reg.sync.register('sync-pending-stories'); } catch {}
-            }
-          } catch (e2) {
-            console.error('Gagal menyimpan ke antrian offline', e2);
-            statusEl.textContent = 'Terjadi kesalahan saat menambah story. Coba lagi.';
-          }
+          console.error('Error adding story:', error);
+          alert('An error occurred while adding the story. Please try again.');
         }
       });
     }
@@ -175,15 +128,10 @@ export default class AddStoryPage {
         // Initialize the map
         const map = L.map('map').setView([0, 0], 2);
         
-        // Base layers for add-story map
-        const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '&copy; OpenStreetMap contributors'
-        });
-        const hot = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-          attribution: '&copy; OpenStreetMap contributors, HOT'
-        });
-        osm.addTo(map);
-        L.control.layers({ 'OpenStreetMap': osm, 'OSM HOT': hot }, {}).addTo(map);
+        // Add tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
         
         // Store map instance
         this.map = map;

@@ -3,22 +3,14 @@ import CONFIG from '../config';
 const ENDPOINTS = {
   LIST: `${CONFIG.BASE_URL}/stories`,
   ADD: `${CONFIG.BASE_URL}/stories`,
-  ADD_GUEST: `${CONFIG.BASE_URL}/stories/guest`,
   REGISTER: `${CONFIG.BASE_URL}/register`,
   LOGIN: `${CONFIG.BASE_URL}/login`,
 };
 
-export async function getStories({ page = 1, size = 30, withLocation = true } = {}) {
-  const token = localStorage.getItem('token');
-  const params = new URLSearchParams();
-  params.set('page', page);
-  params.set('size', size);
-  if (withLocation) params.set('location', 1);
-
-  const response = await fetch(`${ENDPOINTS.LIST}?${params.toString()}`, {
+export async function getStories() {
+  const response = await fetch(ENDPOINTS.LIST, {
     headers: {
       'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
   });
   return await response.json();
@@ -31,17 +23,11 @@ export async function addStory({ description, photo, lat, lon }) {
   formData.append('lat', lat);
   formData.append('lon', lon);
 
-  const token = localStorage.getItem('token');
-  const url = token ? ENDPOINTS.ADD : ENDPOINTS.ADD_GUEST;
-
-  const response = await fetch(url, {
+  const response = await fetch(ENDPOINTS.ADD, {
     method: 'POST',
-    headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
     body: formData,
   });
-
+  
   return await response.json();
 }
 
