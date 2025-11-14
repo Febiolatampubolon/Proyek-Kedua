@@ -1,4 +1,5 @@
 import { getStories } from '../../data/api.js';
+import { saveStories, getCachedStories } from '../../utils/idb.js';
 
 export default class MapPage {
   async render() {
@@ -83,6 +84,11 @@ export default class MapPage {
       
       if (result.error) {
         console.error('Error fetching stories:', result.message);
+        const cached = await getCachedStories();
+        if (cached.length > 0) {
+          this.displayStoriesList(cached);
+          this.addMarkersToMap(cached);
+        }
         return;
       }
       
@@ -91,7 +97,17 @@ export default class MapPage {
       
       // Add markers to map
       this.addMarkersToMap(result.list);
+
+      await saveStories(result.list);
     } catch (error) {
+      try {
+        const cached = await getCachedStories();
+        if (cached.length > 0) {
+          this.displayStoriesList(cached);
+          this.addMarkersToMap(cached);
+          return;
+        }
+      } catch (_) {}
       console.error('Error loading stories:', error);
     }
   }

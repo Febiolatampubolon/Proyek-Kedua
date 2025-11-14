@@ -1,4 +1,6 @@
 import { addStory } from '../../data/api.js';
+import { addPendingStory, getPendingStories, deletePendingStory } from '../../utils/idb.js';
+import CONFIG from '../../config';
 
 export default class AddStoryPage {
   async render() {
@@ -79,21 +81,53 @@ export default class AddStoryPage {
         
         try {
           const result = await addStory({ description, photo, lat, lon });
-          
-          if (result.error) {
+          if (result && result.error) {
             alert(`Error: ${result.message}`);
             return;
           }
-          
-          // Show success message and redirect to map
           alert('Story added successfully!');
           window.location.hash = '#/map';
         } catch (error) {
-          console.error('Error adding story:', error);
-          alert('An error occurred while adding the story. Please try again.');
+          await addPendingStory({ description, photo, lat, lon });
+          alert('Kamu sedang offline. Cerita disimpan dan akan dikirim saat online.');
         }
       });
     }
+
+    if ('serviceWorker' in navigator && Notification.permission === 'granted') {
+      const reg = await navigator.serviceWorker.ready;
+      const existing = await reg.pushManager.getSubscription();
+      if (!existing && CONFIG.VAPID_PUBLIC_KEY) {
+        const key = CONFIG.VAPID_PUBLIC_KEY;
+        const padding = '='.repeat((4 - (key.length % 4)) % 4);
+        const base64 = (key + padding).replace(/-/g, '+').replace(/_/g, '/');
+        const rawData = atob(base64);
+        const outputArray = new Uint8Array(rawData.length);
+        for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+        try {
+          const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: outputArray });
+          try {
+            await fetch(`${CONFIG.BASE_URL}/push/subscriptions`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(sub) });
+          } catch (_) {}
+        } catch (_) {}
+      }
+    }
+
+    async function flushQueue() {
+      const items = await getPendingStories();
+      if (!items || items.length === 0) return;
+      for (const item of items) {
+        try {
+          const result = await addStory({ description: item.description, photo: item.photo, lat: item.lat, lon: item.lon });
+          if (!result || result.error) continue;
+          await deletePendingStory(item.id);
+        } catch (_) {}
+      }
+    }
+
+    window.addEventListener('online', () => {
+      flushQueue();
+    });
   }
 
   loadLeaflet() {
