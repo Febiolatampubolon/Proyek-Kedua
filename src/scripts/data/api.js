@@ -23,9 +23,12 @@ export async function addStory({ description, photo, lat, lon }) {
   formData.append('lat', lat);
   formData.append('lon', lon);
 
+  const token = localStorage.getItem('token');
+
   const response = await fetch(ENDPOINTS.ADD, {
     method: 'POST',
     body: formData,
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
   });
   
   return await response.json();
