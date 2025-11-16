@@ -1,0 +1,38 @@
+{
+  "name": "Stories Map",
+  "short_name": "Stories",
+  "start_url": "/Proyek-Kedua/",
+  "scope": "/Proyek-Kedua/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0b5fff",
+  "description": "Aplikasi untuk berbagi cerita dengan peta interaktif.",
+  "icons": [
+    {
+      "src": "/Proyek-Kedua/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/Proyek-Kedua/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/Proyek-Kedua/screenshots/screen-home.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "label": "Halaman Beranda"
+    },
+    {
+      "src": "/Proyek-Kedua/screenshots/screen-map.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "label": "Halaman Peta"
+    }
+  ]
+}
